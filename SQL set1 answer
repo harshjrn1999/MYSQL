@@ -1,0 +1,87 @@
+Question 1:-
+
+CREATE table CITY(
+
+id int,
+name varchar(17),
+countrycode varchar(3),
+district varchar(20),
+population bigint
+);
+
+insert into CITY VALUES
+(3878,'Scottsdale','USA','Arizona',202705),
+(3965,'Corona','USA','California',124966),
+(3973,'Concord','USA','California',121780),
+(3977,'Cedar Rapids','USA','Iowa',120758),
+(3982,'Coral Springs','USA','Florida',117549),
+(4054,'Fairfield','USA','California',92256),
+(4058,'Boulder','USA','Colorado',91238),
+(4061,'Fall River','USA','Massachusetts',90555);
+
+select * from CITY where countrycode = 'USA' and population  > 100000;
+
+Question 2:- 
+
+select * from CITY where countrycode = 'USA' and population  > 120000;
+
+Question 3:-
+
+SELECT * from CITY
+Question 4:-
+
+select * from CITY where id = 1661;
+
+Question 5:-
+select * from CITY where countrycode = 'JPN';
+
+Question 6:-
+select name from CITY where countrycode = 'JPN';
+
+Question 7:-
+
+create table station(
+id int,
+city varchar(21),
+state varchar(2),
+lat_n float,
+lat_w float
+);
+
+SELECT CITY,STATE FROM station; 
+
+Question 8:-
+
+select distinct city from station where mod(id,2)=0 order by city asc;
+
+Question 9:-
+
+select count(city) as city_no - count(distinct city) as dis_city from station;
+(select CITY, length(CITY) as city_len from STATION order by city_len asc, CITY asc limit 1) union
+(select CITY, length(city) as city_len from STATION order by city_len desc, CITY asc limit 1);
+
+
+Question 10
+
+SELECT DISTINCT(CITY) FROM station WHERE CITY LIKE 'A%' OR CITY LIKE 'E%' OR CITY LIKE 'I%' OR CITY LIKE 'O%' 
+OR CITY LIKE 'U%' ORDER BY CITY ASC;
+
+Question 11
+select distinct(city) from station where city like '%a' or city like '%e' or city like '%i' or city like '%o' or city like '%u';
+
+Question 12
+SELECT DISTINCT CITY FROM station WHERE upper(SUBSTR(CITY,1,1)) NOT IN ('A','E','I','O','U') AND lower(SUBSTR(CITY,1,1)) NOT IN
+('a','e','i','o','u');     
+
+Question 13
+SELECT DISTINCT CITY FROM station WHERE UPPER(SUBSTR(CITY, LENGTH(CITY), 1)) NOT IN ('A','E','I','O','U') AND LOWER(SUBSTR(CITY, LENGTH(CITY),1)) NOT IN ('a','e','i','o','u');    
+
+Question 14
+SELECT DISTINCT CITY FROM station WHERE LOWER(SUBSTR(CITY,1,1)) NOT IN ('a','e','i','o','u') OR LOWER(SUBSTR(CITY, LENGTH(CITY),1)) NOT IN ('a','e','i','o','u');   
+
+Question 15
+SELECT DISTINCT CITY FROM station WHERE LOWER(SUBSTR(CITY,1,1)) NOT IN ('a','e','i','o','u') AND LOWER(SUBSTR(CITY,LENGTH(CITY),1)) NOT IN ('a','e','i','o','u');    
+
+
+
+
