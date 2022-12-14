@@ -1,0 +1,524 @@
+Q 51:-
+
+create table world
+(name varchar(30) primary key, 
+continent varchar(30), 
+area int,
+population int , 
+gdp bigint);
+
+
+insert into world values
+('Afghanistan', 'Asia', 652230, 25500100, 20343000000),
+('Albania', 'Europe', 28748, 2831741, 12960000000),
+('Algeria', 'Africa', 2381741, 37100000, 188681000000),
+('Andorra', 'Europe', 468, 78115, 3712000000),
+('Angola', 'Africa', 1246700, 20609294, 100990000000);
+
+SELECT name, population, area
+FROM world WHERE area >= 3000000 OR population >= 25000000;
+
+Q 52:-
+
+create table customer
+(id int primary key,
+name varchar(30),
+referee_id int);
+
+insert into customer values
+(1, 'Will', null),(2, 'Jane', null),
+(3, 'Alex', 2),(4, 'Bill', null),
+(5, 'Zack', 1),(6, 'Mark', 2);
+
+SELECT name FROM customer WHERE referee_id <> 2 OR referee_id IS NULL;
+
+Q 53:-
+
+create table customers (id int primary key,name varchar(30));
+
+insert into customers values (1, 'Joe'),(2, 'Henry'),(3, 'Sam'),(4, 'Max');
+
+create table orders (id int primary key, customerId int,
+Foreign key (customerId) references customers(id));
+
+insert into orders values (1,3),(2,1);
+
+select
+    Name as Customers
+from
+    Customers
+where
+    Id
+not in(
+    select CustomerId from Orders
+);
+
+Q54:-
+
+create table employee 
+(employee_id int, team_id int);
+
+insert into employee values
+(1,8),(2,8),(3,8),(4,7),(5,9),(6,9);
+
+SELECT
+employee_id, COUNT(team_id) OVER (PARTITION BY team_id) team_size
+FROM employee;
+
+Q56:-
+
+create table activity(
+player_id int ,
+device_id int,
+event_date date ,
+games_played int,
+primary key (player_id,event_date));
+insert into activity VALUES
+(1, 2, '2016-03-01', 5),
+(1, 2, '2016-03-02', 6),
+(2, 3, '2017-06-25', 1),
+(3, 1, '2016-03-01', 0),
+(3, 4, '2016-07-03', 5);
+
+
+select player_id, min(event_date) as first_login
+from activity 
+group by player_id;
+
+Q57:-
+
+create table orders 
+(order_number int primary key, 
+customer_number int
+);
+
+insert into orders values (1,1),(2,2),(3,3),(4,3);
+
+select
+customer_number 
+from
+(select customer_number, count(order_number) order_count 
+from orders group by customer_number
+) a 
+order by order_count desc limit 1;
+
+Q58:-
+
+create table cinema 
+(seat_id int primary key AUTO_INCREMENT, 
+free bool);
+
+insert into cinema values (1,1),(2,0),(3,1),(4,1),(5,1);
+
+SELECT
+DISTINCT t1.seat_id
+FROM cinema AS t1 JOIN cinema AS t2
+ON abs(t1.seat_id - t2.seat_id) = 1
+AND t1.free = 1 AND t2.free = 1
+ORDER BY 1 ;
+
+Q60:-
+
+create table triangle 
+(x int,y int,z int, 
+primary key (x,y,z));
+
+insert into triangle values (13,15,30),(10,20,15);
+
+SELECT
+	x, 
+	y, 
+	z, 
+	IF(x + y > z AND y + z > x AND z + x > y, 'Yes', 'No') triangle 
+FROM
+triangle;
+
+Q61:-
+
+create table point
+(x int primary key
+
+insert into point values (-1),(0),(2);
+
+SELECT MIN(abs(p2.x - p1.x)) shortest
+FROM point p1 JOIN point p2
+ON p1.x != p2.x;
+
+Q62:-
+
+create table actorDirector 
+(actor_id int,
+director_id int,
+timestamp int primary key);
+insert into actorDirector values
+(1,1,0),
+(1,1,1),
+(1,1,2),
+(1,2,3),
+(1,2,4),
+(2,1,5),
+(2,1,6);
+
+SELECT actor_id, director_id
+FROM actorDirector
+GROUP BY actor_id, director_id
+HAVING COUNT(*) >= 3;
+
+
+Q63:-
+
+create table Sales
+(sale_id int,
+product_id int,
+year int,
+quantity int,
+price int,
+primary key (sale_id,year));
+
+insert into Sales values
+(1,100,2008,10,5000),
+(2,100,2009,12,5000),
+(7,200,2011,15,9000);
+
+create table Product 
+(product_id int primary key,
+product_name varchar(30));
+
+insert into Product values
+(100,'Nokia'),
+(200,'Apple'),
+(300,'Samsung');
+
+select
+product_name, year, price 
+from Sales 
+join Product 
+on Sales.product_id = Product.product_id;
+
+Q64:- same 
+
+Q65:-
+
+create table product
+(product_id int primary key,
+product_name varchar(30), 
+unit_price int
+);
+
+create table sales (
+seller_id int,
+product_id int, 
+buyer_id int, 
+sale_date date, 
+quantity int, 
+price int,
+Foreign key (product_id) references product(product_id));
+
+insert into product values
+(1,'S8',1000),
+(2,'G4',800),
+(3,'iPhone',14000);
+
+insert into sales values
+(1,1,1,'2019-01-21',2,2000),(1,2,2,'2019-02-17',1,800),
+(2,2,3,'2019-06-02',1,800),(3,3,4,'2019-05-13',1,2800);
+
+
+
+select product_id,product_name from product
+where product_id  in (select product_id from sales where sale_date between '2019-01-01' and '2019-03-31');
+
+Q66:-
+
+create table product
+(product_id int primary key,
+product_name varchar(30), 
+unit_price int
+);
+
+create table sales (
+seller_id int,
+product_id int, 
+buyer_id int, 
+sale_date date, 
+quantity int, 
+price int,
+Foreign key (product_id) references product(product_id));
+
+insert into product values
+(1,'S8',1000),
+(2,'G4',800),
+(3,'iPhone',14000);
+
+insert into sales values
+(1,1,1,'2019-01-21',2,2000),(1,2,2,'2019-02-17',1,800),
+(2,2,3,'2019-06-02',1,800),(3,3,4,'2019-05-13',1,2800);
+
+
+
+select product_id,product_name from product
+where product_id  in (select product_id from sales where sale_date between '2019-01-01' and '2019-03-31');
+
+
+Q68:-
+
+create table scores
+(player_name varchar(20),
+gender varchar(20), 
+day date,
+score_points int,
+primary key (gender,day)
+);
+
+insert into scores values
+('Aron','F','2020-01-01',17),('Alice','F','2020-01-07',23),
+('Bajrang','M','2020-01-07',7),('Khali','M','2019-12-25',11),
+('Slaman','M','2019-12-30',13),('Joe','M','2019-12-31',3),
+('Jose','M','2019-12-18',2),('Priya','F','2019-12-31',23),
+('Priyanka','F','2019-12-30',17);
+
+
+select s.gender, s.day, 
+(select sum(score_points) 
+from scores 
+where
+gender = s.gender and day <= s.day) as total
+from scores s
+group by gender, day;
+
+Q69:-
+
+create table logs (log_id int primary key);
+insert into logs values (1),(2),(3),(7),(8),(10);
+
+Q70:-
+
+create table students
+(student_id int primary key,
+student_name varchar(30));
+
+insert into students values
+(1,'Alice'),(2,'Bob'),(13,'John'),(6,'Alex');
+
+create table subjects
+(subject_name varchar(30) primary key);
+
+insert into subjects values
+('Math'),('Physics'),('Programming');
+
+create table examinations
+(student_id int,
+subject_name varchar(30));
+
+insert into examinations values
+(1, 'Math'),(1, 'Physics'),(1, 'Programming'),
+(2, 'Programming'),(1, 'Physics'),(1, 'Math'),
+(13, 'Math'),(13, 'Programming'),(13, 'Physics'),
+(2, 'Math'),(1, 'Math');
+
+select
+a.student_id, a.student_name, b.subject_name, 
+count(c.subject_name) as attended_exams
+from
+students as a
+join
+subjects as b
+left join
+examinations as c
+on
+a.student_id = c.student_id 
+and
+b.subject_name = c.subject_name
+group by a.student_id, b.subject_name
+order by a.student_id, b.subject_name;
+
+Q71:-
+
+create table employees 
+(employee_id int primary key,
+employee_name varchar(30),
+manager_id int);
+
+insert into employees values
+(1, 'Boss', 1),
+(3, 'Alice', 3),
+(2, 'Bob', 1),
+(4, 'Daniel', 2),
+(7, 'Luis', 4),
+(8, 'Jhon', 3),
+(9, 'Angela', 8),
+(77, 'Robert', 1);
+
+
+select a.employee_id as EMPLOYEE_ID
+from
+employees as a
+left join
+employees as b on a.manager_id = b.employee_id
+left join
+employees as c on b.manager_id = c.employee_id
+left join
+employees as d on c.manager_id = d.employee_id
+where
+a.employee_id != 1
+and
+d.employee_id = 1;
+
+
+Q72:-
+
+create table actions
+( user_id int,
+post_id int,
+action_date date,
+action enum ('view', 'like', 'reaction', 'comment', 'report', 'share'),
+extra varchar(30));
+
+insert into actions values
+(1, 1, '2019-07-01', 'view', null),
+(1, 1, '2019-07-01', 'like', null),
+(1, 1, '2019-07-01', 'share', null),
+(2, 2, '2019-07-04', 'view', null),
+(2, 2, '2019-07-04', 'report', 'spam'),
+(3, 4, '2019-07-04', 'view', null),
+(3, 4, '2019-07-04', 'report', 'spam'),
+(4, 3, '2019-07-02', 'view', null),
+(4, 3, '2019-07-02', 'report', 'spam'),
+(5, 2, '2019-07-03', 'view', null),
+(5, 2, '2019-07-03', 'report', 'racism'),
+(5, 5, '2019-07-03', 'view', null),
+(5, 5, '2019-07-03', 'report', 'racism');
+
+create table removals
+(post_id int primary key,
+remove_date date);
+
+insert into removals values
+(2,'2019-07-20'),(3,'2019-07-18');
+
+select
+round(avg(daily_count), 2) as average_daily_percent
+from
+(select count(distinct b.post_id)/count(distinct a.post_id)*100 as
+ daily_count
+from
+actions a
+left join on
+a.post_id = b.post_id
+where
+extra = 'spam'
+group by
+action_date
+) b;
+
+Q74:- 
+
+same q43
+
+Q75:-
+
+same
+
+Q77:-
+
+create table sales (sale_date date, fruit enum('apples','oranges'),
+sold_num int, primary key (sale_date,fruit));
+
+
+insert into sales values
+('2020-05-01', 'apples', 10),
+('2020-05-01', 'oranges', 8),
+('2020-05-02', 'apples', 15),
+('2020-05-02', 'oranges', 15),
+('2020-05-03', 'apples', 20),
+('2020-05-03', 'oranges', 0),
+('2020-05-04', 'apples', 15),
+('2020-05-04', 'oranges', 1);
+
+
+select date(sale_date) as sale_date,
+sum(case when fruit = 'apples' then sold_num
+when fruit = 'oranges' then -sold_num end) as diff
+from sales
+group by 1 order by 1;
+
+Q79:- same
+
+Q81:-
+
+create table students 
+(id int, 
+name varchar(15),
+marks int);
+
+insert into students VALUES
+(1,'Ashley',81),
+(2,'Samantha',75),
+(3,'Julia',76),
+(4,'Belvet',84);
+
+select name from students where marks > 75 order by substr(name, -3), id ;
+
+Q85:-
+
+create table server_utilization 
+(server_id int,
+status_time timestamp,
+session_status varchar(20));
+
+insert into server_utilization values
+(1,'2022-08-02 10:00:00','start'),
+(1,'2022-08-04 10:00:00','stop'),
+(2,'2022-08-17 10:00:00','start'),
+(2,'2022-08-24 10:00:00','stop');
+
+with cte as(
+select server_id,status_time start_time,lead(status_time,1) 
+over(partition by server_id ) end_time
+from server_utilization)
+select sum(datediff(end_time,start_time)+1) total_uptime_days from cte;
+
+
+Q90:-
+
+reate table numbers
+(num int primary key,
+frequency int
+);
+insert into numbers values (0,7),(1,1),(2,3),(3,1);
+
+select ROUND((avg(n.num)),2) as median
+from numbers n
+where n.frequency >= abs((select sum(frequency) from numbers where num<=n.num) -
+(select sum(frequency) from numbers where num>=n.num));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
