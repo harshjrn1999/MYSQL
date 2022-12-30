@@ -65,6 +65,55 @@ SELECT
 employee_id, COUNT(team_id) OVER (PARTITION BY team_id) team_size
 FROM employee;
 
+Q55
+
+create table person(
+id int primary key,
+name varchar(20),
+phone_number varchar(20));
+create table country(
+name varchar(20),
+country_code varchar(20) primary key);
+create table calls1(
+caller_id int,
+callee_id int,
+duration int);
+
+insert into person values
+(3,'Jonathan','051-1234567'),
+(12,'Elvis','051-7654321'),
+(1,'Moncef','212-1234567'),
+(2,'Maroua','212-652365'),
+(7,'Meir','972-1234567'),
+(9,'Rachel','972-0011100');
+
+insert into country VALUES
+('Peru',51),
+('Israel',972),
+('Morocco',212),
+('Germany',49),
+('Ethiopia',251);
+
+insert into calls1 VALUES
+(1,9,33),
+(2,9,4),
+(1,2,59),
+(3,12,102),
+(3,12,330),
+(12,3,5),
+(7,9,13),
+(7,1,3),
+(9,7);
+
+select c.name as country
+from person p
+left join country c
+on left(p.phone_number,3) = c.country_code
+left join calls ca
+on p.id in (ca.caller_id,ca.callee_id)
+group by c.name
+having avg(ca.duration) > (select avg(duration) from calls)
+
 Q56:-
 
 create table activity(
@@ -116,6 +165,44 @@ FROM cinema AS t1 JOIN cinema AS t2
 ON abs(t1.seat_id - t2.seat_id) = 1
 AND t1.free = 1 AND t2.free = 1
 ORDER BY 1 ;
+
+Q59
+
+create table SalesPerson(
+sales_id int,name varchar(20),salary int,commission_rate int,hire_date date);
+
+insert into SalesPerson values
+(1,'John', 100000,6,'2006-4-1'),
+(2,'Amy',12000,5,'2010-5-1'),
+(3,'Mark',65000,12,'2008-12-25'),
+(4,'Pam',25000,25,'2005-1-1'),
+(5,'Alex',5000,10,'2007-2-3');
+
+create table Company
+(com_id int,name varchar(20),city varchar(20));
+
+insert into Company values
+(1,'RED','Boston'),
+(2,'ORANGE','New York'),
+(3,'YELLOW','Boston'),
+(4,'GREEN','Austin');
+
+create table Orders(
+order_id int,order_date date,com_id int,sales_id int,amount int);
+
+insert into Orders values
+(1,'2014-1-1',3,4,10000),
+(2,'2014-2-1',4,5,5000),
+(3,'2014-3-1',1,1,50000),
+(4,'2014-4-1',1,4,25000);
+
+
+with cte as
+(select sales_id
+from Orders o
+left join Company c
+on o.com_id = c.com_id
+where c.name like 'RED')
 
 Q60:-
 
@@ -195,7 +282,14 @@ from Sales
 join Product 
 on Sales.product_id = Product.product_id;
 
-Q64:- same 
+Q64:- 
+
+select p.project_id,
+round(avg(e.experience_year),2) as average_years
+from project p
+left join employee e
+on p.employee_id = e.employee_id
+group by p.project_id
 
 Q65:-
 
@@ -291,6 +385,14 @@ Q69:-
 create table logs (log_id int primary key);
 insert into logs values (1),(2),(3),(7),(8),(10);
 
+with cte as
+(select log_id,log_id - row_number() over(order by log_id) as diff from logs)
+
+
+select min(log_id) as start_id, max(log_id) as end_id from cte
+group by diff
+order by start_id
+
 Q70:-
 
 create table students
@@ -338,7 +440,6 @@ create table employees
 (employee_id int primary key,
 employee_name varchar(30),
 manager_id int);
-
 insert into employees values
 (1, 'Boss', 1),
 (3, 'Alice', 3),
@@ -349,23 +450,36 @@ insert into employees values
 (9, 'Angela', 8),
 (77, 'Robert', 1);
 
-
-select a.employee_id as EMPLOYEE_ID
-from
-employees as a
-left join
-employees as b on a.manager_id = b.employee_id
-left join
-employees as c on b.manager_id = c.employee_id
-left join
-employees as d on c.manager_id = d.employee_id
-where
-a.employee_id != 1
-and
-d.employee_id = 1;
+select a.employee_id from employees a join employees b join employees c
+on a.manager_id = b.employee_id and b.manager_id = c.employee_id
+where c.manager_id = 1 and a.employee_id !=1
 
 
 Q72:-
+
+create table transactions
+(id int primary key,
+country varchar(30),
+state enum('approved','declined'),
+amount int,
+trans_date date);
+insert into transactions values
+(121, 'US', 'approved', 1000, '2018-12-18'),
+(122, 'US', 'declined', 2000, '2018-12-19'),
+(123, 'US', 'approved', 2000, '2019-01-01'),
+(124, 'DE', 'approved', 2000, '2019-01-07');
+
+SELECT DATE_FORMAT(trans_date,'%Y-%m') MONTH,
+country,
+count(*) as trans_count,
+sum(case when state = 'approved' then 1 else 0 end) approved_count,
+sum(amount) as trans_total_amount,
+sum(case when state = 'approved' then amount else 0 end) approved_total_amount
+from transactions
+group by DATE_FORMAT(trans_date,'%Y-%m'),
+country;
+
+Q73
 
 create table actions
 ( user_id int,
@@ -373,6 +487,9 @@ post_id int,
 action_date date,
 action enum ('view', 'like', 'reaction', 'comment', 'report', 'share'),
 extra varchar(30));
+create table removals
+(post_id int primary key,
+remove_date date);
 
 insert into actions values
 (1, 1, '2019-07-01', 'view', null),
@@ -388,11 +505,6 @@ insert into actions values
 (5, 2, '2019-07-03', 'report', 'racism'),
 (5, 5, '2019-07-03', 'view', null),
 (5, 5, '2019-07-03', 'report', 'racism');
-
-create table removals
-(post_id int primary key,
-remove_date date);
-
 insert into removals values
 (2,'2019-07-20'),(3,'2019-07-18');
 
@@ -403,13 +515,16 @@ from
  daily_count
 from
 actions a
-left join on
+left join
+removals b
+on
 a.post_id = b.post_id
 where
 extra = 'spam'
 group by
 action_date
 ) b;
+
 
 Q74:- 
 
@@ -419,45 +534,225 @@ Q75:-
 
 same
 
+Q76
+
+create table Salaries(
+company_id int, employee_id int,employee_name varchar(20), salary int);
+insert into Salaries values
+(1,1, 'Tony', 2000),
+(1,2, 'Pronub', 21300),
+(1,3, 'Tyrrox', 10800),
+(2,1, 'Pam', 300),
+(2,7, 'Bassem', 450),
+(2,9, 'Hermione', 700),
+(3,7, 'Bocaben', 100),
+(3,2, 'Ognjen', 2200),
+(3,13 ,'Nyan Cat', 3300),
+(3,15 ,'Morning Cat', 7777);
+
+with cte as
+(select *, max(salary) over(partition by company_id) as max_salary
+from Salaries)
+
+select company_id,employee_id,employee_name,
+round(case when max_salary < 1000 then salary
+when max_salary between 1000 and 10000 then 0.76*salary
+else 0.51*salary end,0) as salary
+from cte
+
+
 Q77:-
 
-create table sales (sale_date date, fruit enum('apples','oranges'),
-sold_num int, primary key (sale_date,fruit));
+create table Expressions
+(left_operand varchar(2),operator enum ('<', '>', '=')
+,right_operand varchar(2));
+insert into Expressions VALUES
+('x', '>' ,'y'),
+('x', '<' ,'y'),
+('x', '=' ,'y'),
+('y', '>' ,'x'),
+('y', '<' ,'x'),
+('x', '=' ,'x');
+
+select e.*, case when operator = '>' and v1.value > v2.value then 'true'
+when operator = '=' and v1.value = v2.value then 'true'
+when operator = '<' and v1.value < v2.value then 'true' else 'false' end as value
+from Expressions e
+LEFT join Variables v1
+on e.left_operand = v1.name
+left join Variables v2
+on e.right_operand = v2.name
 
 
-insert into sales values
-('2020-05-01', 'apples', 10),
-('2020-05-01', 'oranges', 8),
-('2020-05-02', 'apples', 15),
-('2020-05-02', 'oranges', 15),
-('2020-05-03', 'apples', 20),
-('2020-05-03', 'oranges', 0),
-('2020-05-04', 'apples', 15),
-('2020-05-04', 'oranges', 1);
+
+Q78
+
+create table countries
+(country_id int primary key,
+country_name varchar(30));
+
+create table weather(
+country_id int,
+weather_state int,
+day date,
+primary key (country_id , day));
+
+insert into countries values
+(2, 'USA'),(3, 'Australia'),(7, 'Peru'),
+(5, 'China'),(8, 'Morocco'),(9, 'Spain');
+insert into weather values
+(2, 15, '2019-11-01'),(2, 12, '2019-10-28'),
+(2, 12, '2019-10-27'),(3, -2, '2019-11-10'),
+(3, 0, '2019-11-11'),(3, 3, '2019-11-12'),
+(5, 16, '2019-11-07'),(5, 18, '2019-11-09'),
+(5, 21, '2019-11-23'),(7, 25, '2019-11-28'),
+(7, 22, '2019-12-01'),(7, 20, '2019-12-02'),
+(8, 25, '2019-11-05'),(8, 27, '2019-11-15'),
+(8, 31, '2019-11-25'),(9, 7, '2019-10-23'),(9, 3, '2019-12-23');
+
+select c.country_name, case when avg(w.weather_state) <= 15 then 'Cold'
+when avg(w.weather_state) >= 25 then 'Hot'
+else 'Warm' end as weather_type
+from weather w
+left join countries c
+on w.country_id = c.country_id
+where month(day) = 11  and year(day) = 2019
+group by c.country_name
 
 
-select date(sale_date) as sale_date,
-sum(case when fruit = 'apples' then sold_num
-when fruit = 'oranges' then -sold_num end) as diff
-from sales
-group by 1 order by 1;
+Q79:- 
 
-Q79:- same
+create table employee(employee_id int,name varchar(30),months int,salary int)
+
+insert into employee values
+(12228,'Rose',15,1968),
+(33645,'Angela',1,3443),(45692,'Frank',17,1608),
+(56118,'Patrick',7,1345),(59725,'Lisa',11,2330),
+(74197,'Kimberly',16,4372),(78454,'Bonnie',8,1771),
+(83565,'Michael',6,2017),(98607,'Todd',5,3396),
+(99989,'Joe',9,3573);
+
+select months*salary as salary, count(*) as count from employee
+group by salary
+order by salary desc
+limit 1;
+
+Q80
+
+with productdata as (
+
+select transaction_id,product_id,
+EXTRACT(year from transaction_date) as year,
+spend,
+lag(spend) over (PARTITION BY product_id order by transaction_date) as last_spend
+from user_transactions)
+
+SELECT year,product_id,spend as curr_year_spend,
+last_spend as prev_year_spend,
+round(((spend-last_spend)/last_spend)*100,2) as yoy_rate from productdata LIMIT 4;
 
 Q81:-
 
-create table students 
-(id int, 
-name varchar(15),
-marks int);
+WITH summary AS (  
+  SELECT  
+    item_type,  
+    SUM(square_footage) AS total_sqft,  
+    COUNT(*) AS item_count  
+  FROM inventory  
+  GROUP BY item_type
+),
+prime_items AS (  
+  SELECT  
+    DISTINCT item_type,
+    total_sqft,
+    TRUNC(500000/total_sqft,0) AS prime_item_combo,
+    (TRUNC(500000/total_sqft,0) * item_count) AS prime_item_count
+  FROM summary  
+  WHERE item_type = 'prime_eligible'
+),
+non_prime_items AS (  
+  SELECT
+    DISTINCT item_type,
+    total_sqft,  
+    TRUNC(
+      (500000 - (SELECT prime_item_combo * total_sqft FROM prime_items))  
+      / total_sqft, 0) * item_count AS non_prime_item_count  
+  FROM summary
+  WHERE item_type = 'not_prime')
 
-insert into students VALUES
-(1,'Ashley',81),
-(2,'Samantha',75),
-(3,'Julia',76),
-(4,'Belvet',84);
+SELECT 
+  item_type,  
+  prime_item_count AS item_count  
+FROM prime_items  
+UNION ALL  
+SELECT  
+  item_type,  
+  non_prime_item_count AS item_count  
+FROM non_prime_items;
 
-select name from students where marks > 75 order by substr(name, -3), id ;
+Q82
+
+SELECT extract(month from event_date) as month, count(distinct user_id) "monthly_active_users"
+FROM user_actions
+where event_date between '07/01/2022' and '07/31/2022'
+and user_id in (select user_id
+                from user_actions
+                where event_date between '06/01/2022' and '06/30/2022')
+group by month;
+
+Q83:
+
+with recursive searches_searies as
+(
+    select searches, num_users, 1 as n from search_frequency
+    union all
+    select searches, num_users, n + 1 from searches_searies
+    where n + 1 <= num_users
+)
+
+select round(percentile_cont(0.5) within group (order by searches)::dec,1) as median
+from searches_searies
+
+Q84
+
+select user_id,
+CASE
+
+    when paid > 0  and status in ('NEW','EXISTING','RESURRECT') then 'EXISTING'
+    when paid > 0 and status = 'CHURN' THEN 'RESURRECT'
+    WHEN PAID IS NULL THEN 'CHURN'
+    ELSE 'NEW' END AS new_status
+    
+from advertiser
+FULL OUTER  JOIN daily_pay
+using(user_id)
+order by user_id;
+
+Q85
+
+SELECT SUM(uptime_days) AS total_uptime_days
+
+FROM(SELECT server_id,
+    (SUM(CASE WHEN session_status = 'stop' 
+              THEN EXTRACT(day FROM date(status_time)) 
+              ELSE -EXTRACT(day FROM date(status_time))
+          END)) AS uptime_days
+              
+FROM server_utilization
+GROUP BY server_id
+ORDER BY server_id) AS temp_table
+
+Q86:
+
+solved in set 3
+
+Q88:-
+
+same
+
+Q89:-
+
+same
 
 Q85:-
 
@@ -491,6 +786,59 @@ select ROUND((avg(n.num)),2) as median
 from numbers n
 where n.frequency >= abs((select sum(frequency) from numbers where num<=n.num) -
 (select sum(frequency) from numbers where num>=n.num));
+
+Q91:
+
+select dep_avg.month_year as pay_month,
+department_id,
+case when comp_Sal > dep_sal then 'lower'
+when comp_Sal<dep_sal then 'higher'
+else 'same' end as comparison
+from
+(select date_format(pay_date,'%Y-%m') month_year,avg(amount) as comp_Sal
+from Salary
+group by month_year) comp_avg
+join
+
+(select date_format(pay_date,'%Y-%m') month_year,department_id,avg(amount) as dept_Sal from Salary s join employee e
+on s.employee_id = e.employee_id
+group by month_year,department_id)dep_avg
+on comp_avg.month_year = dep_avg.month_year;
+
+
+Q93
+
+create table Players
+(player_id int,
+group_id int);
+
+insert into Players values
+(15,1),(25,1),(30,1),(45,1),(10,2),(35,2),(50,2),(20,3),(40,3);
+
+create table Matches
+(match_id int,
+first_player int,
+second_player int, 
+first_score int,
+second_score int);
+
+insert into Matches values
+(1,15,45,3,0),(2,30,25,1,2),(3,30,15,2,0),(4,40,20,5,2),(5,35,50,1,1);
+
+with player_rank as
+(select group_id,player_id,
+rank() over (partition by group_id order by sum(case when player_id=first_player then first_score else second_score end) desc,player_id asc) score_rank
+from Matches m join Players p
+on player_id in (first_player, second_player)
+group by group_id,player_id)
+select group_id,player_id from player_rank where score_rank =1;
+
+
+
+
+
+
+
 
 
 
